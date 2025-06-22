@@ -35,27 +35,37 @@ document.addEventListener('DOMContentLoaded', () => {
     let previousLevelQuestions = []; // 存储上一关的问题，用于下一关的洗牌道具获取
 
     function playBackgroundMusic() {
-        if (backgroundMusic && backgroundMusic.paused && !musicStarted) {
-            backgroundMusic.volume = 0.5; // 设置音量为50%
-            backgroundMusic.play().catch(e => {
-                console.error("背景音乐播放失败: ", e);
-                // 添加一个音乐播放按钮，让用户手动触发
-                if (!document.getElementById('music-button')) {
-                    const musicButton = document.createElement('button');
-                    musicButton.id = 'music-button';
-                    musicButton.className = 'music-button';
-                    musicButton.innerHTML = '🎵';
-                    musicButton.title = '播放背景音乐';
-                    musicButton.addEventListener('click', () => {
-                        backgroundMusic.play().catch(e => console.error("手动播放背景音乐失败: ", e));
-                        musicButton.style.display = 'none';
-                    });
-                    document.body.appendChild(musicButton);
-                }
-            });
-            musicStarted = true;
-        }
+    if (backgroundMusic && backgroundMusic.paused && !musicStarted) {
+        backgroundMusic.volume = 0.5; // 设置音量为50%
+        backgroundMusic.play().catch(e => {
+            console.error("背景音乐播放失败: ", e);
+        });
+        musicStarted = true;
     }
+    
+    // 确保音乐按钮始终存在，无论音乐是否播放成功
+    if (!document.getElementById('music-button')) {
+        const musicButton = document.createElement('button');
+        musicButton.id = 'music-button';
+        musicButton.className = 'music-button';
+        musicButton.innerHTML = backgroundMusic && !backgroundMusic.paused ? '🔊' : '🔇';
+        musicButton.title = backgroundMusic && !backgroundMusic.paused ? '关闭背景音乐' : '播放背景音乐';
+        musicButton.addEventListener('click', () => {
+            if (backgroundMusic) {
+                if (backgroundMusic.paused) {
+                    backgroundMusic.play().catch(e => console.error("手动播放背景音乐失败: ", e));
+                    musicButton.innerHTML = '🔊';
+                    musicButton.title = '关闭背景音乐';
+                } else {
+                    backgroundMusic.pause();
+                    musicButton.innerHTML = '🔇';
+                    musicButton.title = '播放背景音乐';
+                }
+            }
+        });
+        document.body.appendChild(musicButton);
+    }
+}
 
     // Try to play music on first user interaction
     document.body.addEventListener('click', playBackgroundMusic, { once: true });
